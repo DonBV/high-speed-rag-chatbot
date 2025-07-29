@@ -1,0 +1,5 @@
+[flake8]
+ignore = E501,W291,W293,E302,E305,F811
+max-line-length = 120
+select = E,F,W,B,B9        # включает flake8-bandit
+exclude = source/*
