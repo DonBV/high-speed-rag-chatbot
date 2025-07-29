@@ -7,19 +7,27 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]       # несколько версий
+        python-version: ["3.10", "3.11"]
+
     steps:
-      - uses: actions/checkout@v4              # клонирует репо
-      - uses: actions/setup-python@v5          # ставит нужный Python
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"                         # вкл. кеш pip ⟶ быстрее
-      - name: Install deps
-        run: |
-          if: hashFiles('requirements.txt') != ''
-          pip install -r requirements.txt
-          pip install pytest flake8
-      - name: Lint with flake8                 # статический анализ
+          cache: "pip"
+
+      # ① устанавливаем зависимости, если файл существует
+      - name: Install project deps
+        if: hashFiles('requirements.txt') != ''
+        run: pip install -r requirements.txt
+
+      # ② всегда ставим инструменты для CI
+      - name: Install CI tools
+        run: pip install pytest flake8
+
+      - name: Lint with flake8
         run: flake8 .
-      - name: Run tests                        # pytest
+
+      - name: Run tests
         run: pytest -q
