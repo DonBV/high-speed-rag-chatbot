@@ -1,0 +1,24 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test-lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]       # несколько версий
+    steps:
+      - uses: actions/checkout@v4              # клонирует репо
+      - uses: actions/setup-python@v5          # ставит нужный Python
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"                         # вкл. кеш pip ⟶ быстрее
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          pip install pytest flake8
+      - name: Lint with flake8                 # статический анализ
+        run: flake8 .
+      - name: Run tests                        # pytest
+        run: pytest -q
