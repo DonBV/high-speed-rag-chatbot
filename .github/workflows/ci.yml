@@ -5,30 +5,22 @@ on: [push, pull_request]
 jobs:
   test-lint:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         python-version: ["3.10", "3.11"]
 
     steps:
-      # 1 — клонируем репозиторий
       - uses: actions/checkout@v4
 
-      # 2 — ставим нужную версию Python; кэшируем pip
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5        # cache удалён
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
 
-      # 3 — устанавливаем инструменты CI
       - name: Install CI tools
-        run: |
-          pip install --no-cache-dir flake8 flake8-bandit pytest
+        run: pip install flake8 flake8-bandit pytest
 
-      # 4 — линт + static‑security (Bandit интегрирован во Flake8)
-      - name: Lint and security check
+      - name: Lint + security
         run: flake8 .
 
-      # 5 — запуск unit‑тестов
       - name: Run tests
         run: pytest -q
