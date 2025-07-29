@@ -1,5 +1,6 @@
 # Guidance for High Speed Retrieval Augmented Generation (RAG) chatbots on AWS.
 
+[![CI](https://github.com/DonBV/high-speed-rag-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/DonBV/high-speed-rag-chatbot/actions/workflows/ci.yml)
 
 1. [Overview](#overview)
     - [Architecture](#architecture)
