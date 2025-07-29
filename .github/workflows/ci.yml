@@ -16,6 +16,7 @@ jobs:
           cache: "pip"                         # вкл. кеш pip ⟶ быстрее
       - name: Install deps
         run: |
+          if: hashFiles('requirements.txt') != ''
           pip install -r requirements.txt
           pip install pytest flake8
       - name: Lint with flake8                 # статический анализ
