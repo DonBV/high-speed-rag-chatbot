@@ -1,4 +1,6 @@
 name: CI
+permissions:
+  contents: read
 
 on: [push, pull_request]
 
@@ -11,8 +13,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5        # cache удалён
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
