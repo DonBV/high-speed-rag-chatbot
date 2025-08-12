@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  db:
+    image: ankane/pgvector:latest  # Postgres with pgvector extension
+    container_name: rag-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-postgres}
+      POSTGRES_DB: ${PGDATABASE:-postgres}
+    ports:
+      - "${PGPORT:-5432}:5432"
+    volumes:
+      # Database data
+      - pgdata:/var/lib/postgresql/data
+      # Initialization scripts (optional, see below)
+      - ./deployment/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres} -d ${PGDATABASE:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
