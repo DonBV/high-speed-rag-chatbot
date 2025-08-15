@@ -1,0 +1,43 @@
+ci:
+  autoupdate_schedule: quarterly
+
+default_language_version:
+  python: python3.11
+
+repos:
+  # Базовые универсальные проверки
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  # Форматтер
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        args: ["--line-length=88"]
+
+  # Сортировка импортов (под профиль black)
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile=black"]
+
+  # Линтер (с плагином безопасности)
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        additional_dependencies: ["flake8-bandit"]
+
+  # Орфография в коде и доках (опционально, но полезно)
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
