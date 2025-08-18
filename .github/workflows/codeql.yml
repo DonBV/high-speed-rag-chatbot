@@ -1,0 +1,74 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "**/*.py"
+      - ".github/workflows/codeql.yml"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "**/*.py"
+      - ".github/workflows/codeql.yml"
+  schedule:
+    - cron: "0 5 * * 1"  # weekly, 05:00 UTC (Mon)
+
+# cancel older runs for the same ref (saves minutes)
+concurrency:
+  group: "codeql-${{ github.ref }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  analyze:
+    name: CodeQL / Analyze (python)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ "python" ]
+        # if you add a frontend later:
+        # language: [ "python", "javascript" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871  # v4 pinned
+
+      # Ignore noisy directories
+      - name: Create CodeQL config
+        run: |
+          cat > codeql-config.yml <<'YAML'
+          name: repo-codeql-config
+          paths-ignore:
+            - docs/**
+            - assets/**
+            - "**/*.md"
+            - "**/.venv/**"
+            - "**/venv/**"
+            - "**/__pycache__/**"
+          queries:
+            - uses: security-and-quality
+          YAML
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@cdcdbb579706841c47f7063dda365e292e5cad7a  # v3 pinned
+        with:
+          languages: ${{ matrix.language }}
+          config-file: ./codeql-config.yml
+
+      # Python does not require an explicit build, but we reserve the step for the future
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@cdcdbb579706841c47f7063dda365e292e5cad7a
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@cdcdbb579706841c47f7063dda365e292e5cad7a
+        with:
+          category: "/language:${{ matrix.language }}"
+          upload: true
