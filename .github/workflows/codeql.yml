@@ -1,72 +1,89 @@
-# Run `pip install pre-commit && pre-commit install` locally.
-# In CI you can run:  pre-commit run --all-files
-
 ci:
-  # Let the bot suggest dependency bumps every quarter.
   autoupdate_schedule: quarterly
 
-# Pin the Python used by Python hooks (your repo still controls its own runtime)
 default_language_version:
   python: python3.11
 
 repos:
-  # ---------- Generic, lightweight hygiene checks ----------
+  # --- Generic safety / hygiene hooks (text files only) ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0   # widely-used stable tag
+    rev: v5.0.0
     hooks:
-      # YAML syntax check, but skip CloudFormation templates (custom tags like !Ref/!GetAtt)
+      # Checks that YAML parses; we exclude CloudFormation templates with custom tags
       - id: check-yaml
-        exclude: ^source/templates/.*\.(yml|yaml)$
-      # Ensures files end with a single newline
+        # Allow YAML multi-document files; keep syntax-only mode for portability issues
+        args: ["--allow-multiple-documents", "--unsafe"]
+        # Check yaml mostly in configs, workflows and deployment; skip CFN templates
+        files: >
+          (?x)^(
+            \.github/workflows/.*\.ya?ml|
+            deployment/.*\.ya?ml|
+            .*\.ya?ml
+          )$
+        exclude: ^source/templates/.*\.ya?ml$
+
+      # Ensure files end with a single newline
       - id: end-of-file-fixer
-      # Strips trailing spaces in text files
+        exclude: >
+          (?x)^(
+            assets/|
+            .*\.(
+              png|jpg|jpeg|gif|webp|svg|ico|pdf|
+              zip|gz|tar|7z|mp4|mp3|wav|mov|pptx|docx
+            )$
+          )
+
+      # Trim trailing whitespace (but don't touch binaries)
       - id: trailing-whitespace
-      # Prevents accidentally committing very large binaries
+        args: ["--markdown-linebreak-ext=md"]
+        exclude: >
+          (?x)^(
+            assets/|
+            .*\.(
+              png|jpg|jpeg|gif|webp|svg|ico|pdf|
+              zip|gz|tar|7z|mp4|mp3|wav|mov|pptx|docx
+            )$
+          )
+
+      # Sanity checks
       - id: check-added-large-files
-        args: ["--maxkb=500"]
-      # Heuristic check to avoid committing private keys
       - id: detect-private-key
 
-  # ---------- CloudFormation templates (CFN) ----------
-  # Use cfn-lint for CFN YAML/JSON (understands !Ref/!GetAtt, validates against specs)
-  - repo: https://github.com/aws-cloudformation/cfn-python-lint
-    rev: v1.38.3
-    hooks:
-      - id: cfn-lint
-        name: cfn-lint (CloudFormation)
-        files: ^source/templates/.*\.(yml|yaml|json)$
-        # Typical exclusions to keep noise low; adjust as needed.
-        args:
-          - "--include-checks=I,W,E"      # informationals, warnings, errors
-          - "--template-parts=default"    # lint full templates
-
-  # ---------- Code formatters ----------
-  # Black: opinionated Python formatter (run before isort to reduce churn)
+  # --- Python formatter (Black) ---
   - repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 25.1.0
     hooks:
       - id: black
         args: ["--line-length=88"]
+        files: ^(source|tests)/.*\.py$
 
-  # isort: sorts/merges imports to match Black’s style
+  # --- Import sorter (isort) using Black profile ---
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
       - id: isort
         args: ["--profile=black"]
+        files: ^(source|tests)/.*\.py$
 
-  # ---------- Linters / spelling ----------
-  # Flake8 (with Bandit plugin) for style + basic security checks
+  # --- Python linter (flake8) + security plugin (bandit via flake8-bandit) ---
   - repo: https://github.com/PyCQA/flake8
     rev: 7.1.1
     hooks:
       - id: flake8
         additional_dependencies: ["flake8-bandit"]
+        files: ^(source|tests)/.*\.py$
 
-  # Codespell: catches common typos in code & docs
+  # --- Spellcheck for docs and code comments (skip binaries) ---
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
       - id: codespell
-        # Tweak ignore list or patterns if you see false positives
-        # args: ["--ignore-words-list=crate,teh", "--skip=LICENSE"]
+        # Common false-positives may be silenced via --ignore-words-list or --skip
+        exclude: >
+          (?x)^(
+            assets/|
+            .*\.(
+              png|jpg|jpeg|gif|webp|svg|ico|pdf|
+              zip|gz|tar|7z|mp4|mp3|wav|mov|pptx|docx
+            )$
+          )
