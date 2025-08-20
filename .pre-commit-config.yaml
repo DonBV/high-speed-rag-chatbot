@@ -1,49 +1,51 @@
 ci:
+  # Bot auto-update of hook versions in pre-commit.ci (doesn't affect GitHub Actions)
   autoupdate_schedule: quarterly
 
+# Make Python hooks run on Python 3.11 in CI
 default_language_version:
   python: python3.11
 
 repos:
-  # --- Generic sanity checks ---
+  # --- Generic hygiene hooks (no YAML schema checking here) ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      # YAML check (skip CloudFormation templates; they are linted by cfn-lint)
-      - id: check-yaml
-        args: ["--allow-multiple-documents"]
-        exclude: ^source/templates/.*\.(yml|yaml)$
-      - id: end-of-file-fixer        # enforce newline at EOF
-      - id: trailing-whitespace      # strip trailing spaces
-      - id: check-added-large-files
-      - id: detect-private-key
+      - id: end-of-file-fixer          # enforce trailing newline
+      - id: trailing-whitespace        # strip trailing spaces
+      - id: check-added-large-files    # prevent huge blobs
+      - id: detect-private-key         # prevent committing secrets
 
-  # --- Lint CloudFormation templates explicitly ---
-  - repo: https://github.com/aws-cloudformation/cfn-lint
-    rev: v1.10.1
-    hooks:
-      - id: cfn-lint
-        files: ^source/templates/.*\.(yml|yaml)$
-
-  # --- Code formatters/linters ---
+  # --- Python formatting & lint ---
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
-      - id: black                   # opinionated Python formatter
+      - id: black
+        args: ["--line-length=88"]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
       - id: isort
-        args: ["--profile=black"]  # keep imports style in sync with Black
+        args: ["--profile=black"]
 
   - repo: https://github.com/PyCQA/flake8
     rev: 7.1.1
     hooks:
       - id: flake8
-        additional_dependencies: ["flake8-bandit"]  # add simple security checks
+        additional_dependencies: ["flake8-bandit"]  # basic security lint
 
+  # --- Spelling in code and docs ---
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
-      - id: codespell               # typos in code/docs
+      - id: codespell
+
+  # --- CloudFormation lint (instead of plain check-yaml) ---
+  # This understands !Sub/!Ref/!GetAtt and avoids the earlier "could not determine constructor for !GetAtt".
+  - repo: https://github.com/aws-cloudformation/cfn-lint
+    rev: v0.87.6
+    hooks:
+      - id: cfn-lint
+        # Limit to your templates to keep runtime small (adjust paths if needed)
+        files: ^source/.+\.ya?ml$|^deployment/.+\.ya?ml$
