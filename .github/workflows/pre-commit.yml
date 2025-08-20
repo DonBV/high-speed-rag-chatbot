@@ -1,15 +1,5 @@
-name: pre-commit
-on:
-  pull_request:
-  push:
-    branches: [ main, setup/ci-precommit ]
-
 permissions:
-  contents: read
-
-concurrency:
-  group: pre-commit-${{ github.ref }}
-  cancel-in-progress: true
+  contents: write   # было: read
 
 jobs:
   run:
@@ -17,8 +7,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+        with: { python-version: "3.11" }
+
+      # 1) прогоняем хуки, они могут изменить файлы -> не падаем
       - uses: pre-commit/action@v3.0.1
+        with: { extra_args: --all-files }
+        continue-on-error: true   # важное изменение
+        id: pc
+
+      # 2) если есть изменения — закоммитим их обратно в ветку
+      - name: Commit pre-commit fixes (if any)
+        if: always()
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
-          extra_args: --all-files
+          commit_message: "chore: apply pre-commit fixes"
+
+      # 3) проверяем ещё раз (теперь должно быть чисто)
+      - uses: pre-commit/action@v3.0.1
+        with: { extra_args: --all-files }
