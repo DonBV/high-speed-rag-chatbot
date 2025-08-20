@@ -1,61 +1,49 @@
 ci:
-  # How often pre-commit will try to autoupdate hook revisions via "pre-commit autoupdate"
   autoupdate_schedule: quarterly
 
-# Use the same Python that your repo targets in CI
 default_language_version:
   python: python3.11
 
 repos:
-  # ---- Basic, repo-agnostic safety checks ----
+  # --- Generic sanity checks ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      # YAML syntax check. CloudFormation uses custom tags like !GetAtt,
-      # so we exclude your CFN templates from this particular hook.
+      # YAML check (skip CloudFormation templates; they are linted by cfn-lint)
       - id: check-yaml
-        exclude: ^(source/templates/.*\.ya?ml)$
         args: ["--allow-multiple-documents"]
-      # Ensures files end with a single trailing newline
-      - id: end-of-file-fixer
-      # Strips trailing spaces
-      - id: trailing-whitespace
-      # Prevents accidentally committing very large blobs
+        exclude: ^source/templates/.*\.(yml|yaml)$
+      - id: end-of-file-fixer        # enforce newline at EOF
+      - id: trailing-whitespace      # strip trailing spaces
       - id: check-added-large-files
-        args: ["--maxkb=600"]
-      # Detects accidentally committed private keys
       - id: detect-private-key
 
-  # ---- Python formatting & imports ----
-  - repo: https://github.com/psf/black
-    rev: 24.8.0
+  # --- Lint CloudFormation templates explicitly ---
+  - repo: https://github.com/aws-cloudformation/cfn-lint
+    rev: v1.10.1
     hooks:
-      - id: black
-        args: ["--line-length=88"]
+      - id: cfn-lint
+        files: ^source/templates/.*\.(yml|yaml)$
+
+  # --- Code formatters/linters ---
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black                   # opinionated Python formatter
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
       - id: isort
-        # Keep import ordering compatible with Black
-        args: ["--profile=black"]
+        args: ["--profile=black"]  # keep imports style in sync with Black
 
-  # ---- Python linting (with basic security checks) ----
   - repo: https://github.com/PyCQA/flake8
     rev: 7.1.1
     hooks:
       - id: flake8
-        additional_dependencies: ["flake8-bandit"]
-        args:
-          # Match Black’s line length and ignore two well-known Black/PEP8 conflicts
-          - "--max-line-length=88"
-          - "--extend-ignore=E203,W503"
+        additional_dependencies: ["flake8-bandit"]  # add simple security checks
 
-  # ---- Typos in code and docs ----
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
-      - id: codespell
-        # Tweak as you hit false positives
-        args: ["--ignore-words-list=crate,statics,ans,te,fo"]
-        exclude: ^(assets/|tests/fixtures/|.*\.lock)$
+      - id: codespell               # typos in code/docs
