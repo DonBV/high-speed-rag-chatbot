@@ -342,4 +342,3 @@ The GenAI Q&A Chatbot with pgvector and Amazon Aurora PostgreSQL-compatible edit
 
 ### Contribution
 This repository is intended for educational purposes and does not accept further contributions. Feel free to utilize and enhance the app based on your own requirements.
-
