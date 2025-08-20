@@ -37,7 +37,7 @@ Parameters:
     Default: 15.6
     AllowedValues:
       - 15.6
-  
+
   DBInstanceSize:
     Type: String
     Default: db.r6gd.2xlarge
@@ -183,7 +183,7 @@ Resources:
 
 # END VPC ------------------------------------------------------
 
-# Cloud9 Instance  
+# Cloud9 Instance
   Cloud9Instance:
     Type: AWS::Cloud9::EnvironmentEC2
     Properties:
@@ -192,34 +192,34 @@ Resources:
       AutomaticStopTimeMinutes: 240
       SubnetId: !Ref Subnet1
       InstanceType: m5.4xlarge
-      ImageId: amazonlinux-2-x86_64      
+      ImageId: amazonlinux-2-x86_64
 
 # RDS IAM Role for Amazon Bedrock ------------------------------
 
-  AuroraBedrockRole: 
+  AuroraBedrockRole:
     Type: AWS::IAM::Role
-    Properties: 
+    Properties:
       RoleName: !Sub ${AWS::StackName}-Aurora-Bedrock-Role
-      AssumeRolePolicyDocument: 
+      AssumeRolePolicyDocument:
         Version: "2012-10-17"
-        Statement: 
-          - 
+        Statement:
+          -
             Effect: "Allow"
-            Principal: 
-              Service: 
+            Principal:
+              Service:
                 - "rds.amazonaws.com"
-            Action: 
+            Action:
               - "sts:AssumeRole"
       Path: "/"
       Policies:
-        - 
+        -
           PolicyName: 'Aurora-Bedrock-Policy'
-          PolicyDocument: 
+          PolicyDocument:
             Version: "2012-10-17"
-            Statement: 
-              - 
+            Statement:
+              -
                 Effect: "Allow"
-                Action: 
+                Action:
                   - "bedrock:InvokeModel"
                 Resource: [ !Sub "arn:aws:bedrock:*:${AWS::AccountId}:provisioned-model/*" , "arn:aws:bedrock:*::foundation-model/*" ]
 
@@ -270,7 +270,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-clusterparamgroup"
-  
+
   ## Create parameter groups for cluster nodes
   apgcustomdbparamgroup:
     Type: AWS::RDS::DBParameterGroup
@@ -357,7 +357,7 @@ Resources:
         - Key: Name
           Value: !Sub ${AWS::StackName}-node-01
 
-## Deploy the reader node  
+## Deploy the reader node
   DBNodeReader:
     Type: AWS::RDS::DBInstance
     DependsOn: DBNodeWriter
@@ -413,4 +413,3 @@ Outputs:
     Export:
       Name:
         'Fn::Sub': '${AWS::StackName}-AuroraBedrockRole'
-

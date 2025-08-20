@@ -34,7 +34,7 @@ The application follows these steps to provide responses to your questions:
 
 3. **Embedding**: The application utilizes Titan Text from Amazon Bedrock to generate vector representations (embeddings) of the text chunks.
 
-4. **User Question**: The user asks a question in natural language. 
+4. **User Question**: The user asks a question in natural language.
 
 5. **Similarity Matching**: When the user asks a question, the app compares it with the text chunks and identifies the most semantically similar ones.
 
@@ -82,7 +82,7 @@ The following table provides a sample cost breakdown for deploying this Guidance
 - For this guidance, we'll be using Anthropic's Claude 3 models as LLMs and Amazon Titan family of embedding models. Click Next in the bottom right corner to review and submit.
   ![](source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs/static/Bedrock_Check_Model_Access.png)
   ![](source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs/static/Bedrock_Submit_Model_Access.png)
-  
+
 - You will be granted access to Amazon Titan models instantly. The Access status column will change to In progress for Anthropic Claude 3 momentarily. Keep reviewing the Access status column. You may need to refresh the page periodically. You should see Access granted shortly (wait time is typically 1-3 mins).
   ![](source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs/static/Bedrock_Model_Access_In_Progress.png)
   ![](source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs/static/Bedrock_Access_Granted.png)
@@ -108,12 +108,12 @@ In this sample code deployment we are using Linux operating system for Cloud9 EC
 This guidance utilizes the `AdministratorAccess` role for deployment. For use in a production environment, refer to the [security best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) in the AWS Identity and Access Management (IAM) documentation and modify the IAM roles, Amazon Aurora, and other services used as needed.
 
 * Using the AWS Management Console
-    * For this guidance , we will be using the us-west-2 region. 
+    * For this guidance , we will be using the us-west-2 region.
     * Sign in to the [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation/home)
     * Create Stack > Upload the `guidance-for-high-speed-rag-chatbots-on-aws/source/templates/prereq-rag-chatbots-on-aws.yml` file
     * Deploy the stack after entering `rag-chatbots` in the stack name
         * The parameters can be changed, but we recommend the default values for a smooth deployment.
-     
+
 #### 3. Deployment Validation
 
 Open the AWS CloudFormation console and verify the status of the stack deployment with the name starting with `rag-chatbots`.
@@ -131,14 +131,14 @@ Deploying this stack automatically creates the following resources:
     ```
     aws cloudformation describe-stacks --stack-name rag-chatbots --query 'Stacks[0].Outputs' --output table --no-cli-pager
     ```
-    
+
 ## Running the Guidance
 #### 1. Setup the environment in AWS Cloud9 to connect to Aurora PostgreSQL DB Cluster
 
 - Navigate to the [AWS Cloud9 Console](https://console.aws.amazon.com/cloud9/home). You will see a Cloud9 Environment created by CloudFormation Stack with name `genai-pgvector-rag-chatbots-Cloud9-IDE`. Click on `Open`, a Cloud9 Environment will load and you will see Welcome page. Within the Cloud9 IDE, click on Window in the Top Menu and then Click on **New Terminal**
 - Use the code block below to setup the environment (use the Copy button on the right to copy code and paste it on the AWS Cloud9 Terminal). Execute the code blocks one by one
 
-     ```bash 
+     ```bash
     # Update the AWS CLI v2
     sudo rm -rf /usr/local/aws
     sudo rm /usr/bin/aws
@@ -146,59 +146,59 @@ Deploying this stack automatically creates the following resources:
     unzip awscliv2.zip
     sudo ./aws/install
     rm awscliv2.zip
- 
+
     # Install Python 3.11
     sudo yum remove -y openssl-devel
-    sudo yum install -y gcc openssl11-devel bzip2-devel libffi-devel 
+    sudo yum install -y gcc openssl11-devel bzip2-devel libffi-devel
     cd /opt
-    sudo wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz 
+    sudo wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz
     sudo tar xzf Python-3.11.9.tgz
     cd Python-3.11.9
-    sudo ./configure --enable-optimizations 
+    sudo ./configure --enable-optimizations
     sudo make altinstall
     sudo rm -f /opt/Python-3.11.9.tgz
     pip install --upgrade pip
      ```
-     
+
      ```
     # Clone the GitHub repository to your AWS Cloud9 IDE:
     git clone https://github.com/aws-solutions-library-samples/guidance-for-high-speed-rag-chatbots-on-aws.git
      ```
-     
+
      ```
     cd ~/environment/guidance-for-high-speed-rag-chatbots-on-aws-main/source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs
 
     # The requirements.txt file has all the required libraries you need to install for building the QnA chatbot application
-    python3.11 -m pip install -r requirements.txt 
-     
+    python3.11 -m pip install -r requirements.txt
+
     # Install JQuery for parsing output
     sudo yum install -y jq
-    
+
     # Install PostgreSQL 14 client and related utilities
     sudo amazon-linux-extras install -y postgresql14
     sudo yum install -y postgresql-contrib sysbench
-    
+
     # Setup your environment variables to connect to Aurora PostgreSQL
     AWSREGION=`aws configure get region`
-    
+
     PGHOST=`aws rds describe-db-cluster-endpoints \
         --db-cluster-identifier apgpg-pgvector \
         --region $AWSREGION \
         --query 'DBClusterEndpoints[0].Endpoint' \
         --output text`
-    
+
     # Retrieve credentials from Secrets Manager - Secret: apgpg-pgvector-secret-$AWSREGION
     CREDS=`aws secretsmanager get-secret-value \
         --secret-id apgpg-pgvector-secret-$AWSREGION \
         --region $AWSREGION | jq -r '.SecretString'`
-    
+
     export PGUSER="`echo $CREDS | jq -r '.username'`"
-    export PGPASSWORD="`echo $CREDS | jq -r '.password'`"    
+    export PGPASSWORD="`echo $CREDS | jq -r '.password'`"
     export PGHOST
     export PGDATABASE=postgres
     export PGPORT=5432
     export AWSREGION
-    
+
     # Persist values in future terminals
     echo "export PGUSER=$PGUSER" >> /home/ec2-user/.bashrc
     echo "export PGPASSWORD='$PGPASSWORD'" >> /home/ec2-user/.bashrc
@@ -220,10 +220,10 @@ Deploying this stack automatically creates the following resources:
     PGVECTOR_PORT=$PGPORT
     PGVECTOR_DATABASE='$PGDATABASE'
     EOF
-    
-    cat .env 
+
+    cat .env
     ```
-     
+
     Your .env file should like the following:
 
     ```
@@ -260,7 +260,7 @@ streamlit run app.py --server.port 8080
 5. Follow the instructions in the sidebar:
 
     a. Browse and upload PDF files. You can upload multiple PDFs because we set the parameter accept_multiple_files=True for the file_uploader function.
-   
+
     b. Let’s upload a PDF – [Amazon Aurora FAQs](https://github.com/aws-solutions-library-samples/guidance-for-high-speed-rag-chatbots-on-aws/blob/main/source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs/data/Amazon%20Aurora%20FAQs.pdf). Download/save this file and upload it to your Streamlit application by clicking Browse files. Once you’ve uploaded the file, click Process. Once the PDF is uploaded successfully, you will see a PDF uploaded successfully.
 
    ![](source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs/static/execution5a.png)
@@ -273,7 +273,7 @@ streamlit run app.py --server.port 8080
 
 7. Let’s ask a different question, a bit more complex – What does "three times the performance of PostgreSQL" mean?
 
-> [!NOTE] 
+> [!NOTE]
 > you may either see a similar or a slightly different response:
 
    ![](source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs/static/execution7.png)
@@ -291,17 +291,17 @@ Note the response (you may either see a similar or a slightly different response
 Now, let’s ask our chatbot the previous question. A response similar to the following is generated:
 
    ![](source/01_RetrievalAugmentedGeneration/01_QuestionAnswering_Bedrock_LLMs/static/execution9.png)
-   
+
 10. Try out some more questions and see the results:
 
         1.Which FMs are available on Amazon Bedrock?
 
         2.Why should I use Amazon Bedrock?
-    
+
         3.What are agents for Amazon Bedrock?
-    
+
         4.How can I connect FMs to my company data sources?
-    
+
         5.How can I securely use my data to customize FMs available through Amazon Bedrock?
 
 ## Next Steps
@@ -328,7 +328,7 @@ When no longer needed, you can delete the resources manually or by deleting the 
 ## Known Issues
 > [!Warning]
 > Encountering AxiosError: Request failed with status code 403? --> Check your Streamlit version in terminal with the command pip show streamlit. It should be 1.24.0.Ensure you're using Mozilla Firefox as your browser. This issue is more common if you're using Google Chrome.
- 
+
 ### License
 
 The GenAI Q&A Chatbot with pgvector and Amazon Aurora PostgreSQL-compatible edition application is released under the [MIT-0 License](https://spdx.org/licenses/MIT-0.html).
@@ -342,5 +342,4 @@ The GenAI Q&A Chatbot with pgvector and Amazon Aurora PostgreSQL-compatible edit
 
 ### Contribution
 This repository is intended for educational purposes and does not accept further contributions. Feel free to utilize and enhance the app based on your own requirements.
-    
 
