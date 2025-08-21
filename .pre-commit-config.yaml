@@ -1,13 +1,14 @@
 ci:
-  # Bot auto-update of hook versions in pre-commit.ci (doesn't affect GitHub Actions)
-  autoupdate_schedule: quarterly
+  # Settings for pre-commit.ci
+  autofix_prs: true            # the bot will commit auto-fixes directly to the PR
+  autoupdate_schedule: weekly  # the bot will update the version of the hooks once a week
 
-# Make Python hooks run on Python 3.11 in CI
+# Using Python 3.11 for all Python hooks
 default_language_version:
   python: python3.11
 
 repos:
-  # --- Generic hygiene hooks (no YAML schema checking here) ---
+  # --- Generic hygiene hooks ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -41,11 +42,10 @@ repos:
     hooks:
       - id: codespell
 
-  # --- CloudFormation lint (instead of plain check-yaml) ---
-  # This understands !Sub/!Ref/!GetAtt and avoids the earlier "could not determine constructor for !GetAtt".
+  # --- CloudFormation lint (понимает !Sub/!Ref/!GetAtt) ---
   - repo: https://github.com/aws-cloudformation/cfn-lint
     rev: v0.87.6
     hooks:
       - id: cfn-lint
-        # Limit to your templates to keep runtime small (adjust paths if needed)
+        # We limit the areas to speed up the run (adjust according to the project)
         files: ^source/.+\.ya?ml$|^deployment/.+\.ya?ml$
