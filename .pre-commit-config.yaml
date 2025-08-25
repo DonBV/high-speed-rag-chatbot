@@ -1,0 +1,51 @@
+ci:
+  # Settings for pre-commit.ci
+  autofix_prs: true            # the bot will commit auto-fixes directly to the PR
+  autoupdate_schedule: weekly  # the bot will update the version of the hooks once a week
+
+# Using Python 3.11 for all Python hooks
+default_language_version:
+  python: python3.11
+
+repos:
+  # --- Generic hygiene hooks ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer          # enforce trailing newline
+      - id: trailing-whitespace        # strip trailing spaces
+      - id: check-added-large-files    # prevent huge blobs
+      - id: detect-private-key         # prevent committing secrets
+
+  # --- Python formatting & lint ---
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        args: ["--line-length=88"]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile=black"]
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        additional_dependencies: ["flake8-bandit"]  # basic security lint
+
+  # --- Spelling in code and docs ---
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+
+  # --- CloudFormation lint (понимает !Sub/!Ref/!GetAtt) ---
+  - repo: https://github.com/aws-cloudformation/cfn-lint
+    rev: v0.87.6
+    hooks:
+      - id: cfn-lint
+        # We limit the areas to speed up the run (adjust according to the project)
+        files: ^source/.+\.ya?ml$|^deployment/.+\.ya?ml$

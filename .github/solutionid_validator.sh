@@ -1,5 +1,5 @@
-#!/bin/sh 
-#set -e 
+#!/bin/sh
+#set -e
 
 echo "checking solution id $1"
 echo "grep -nr --exclude-dir='.github' "$1" ./.."
