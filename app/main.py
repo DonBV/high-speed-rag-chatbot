@@ -1,3 +1,4 @@
+# app/main.py
 import os
 from typing import List, Optional
 
@@ -7,8 +8,8 @@ from psycopg_pool import ConnectionPool
 from openai import OpenAI
 
 # --- config from env ---
-DATABASE_URL = os.environ["DATABASE_URL"]           # e.g. postgresql://postgres:postgres@localhost:5432/rag
-OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]       # OpenAI key for embeddings
+DATABASE_URL = os.environ["DATABASE_URL"]  # e.g. postgresql://postgres:postgres@db:5432/rag
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 EMBED_MODEL = os.environ.get("EMBED_MODEL", "text-embedding-3-small")  # 1536-dim by default
 
 pool = ConnectionPool(conninfo=DATABASE_URL, max_size=10)
@@ -33,17 +34,19 @@ class Hit(BaseModel):
 class SearchOut(BaseModel):
     hits: List[Hit]
 
-# --- helpers ---
 def embed_text(text: str) -> List[float]:
-    # OpenAI embeddings: text-embedding-3-small -> 1536 dims
+    # OpenAI embeddings
     res = client.embeddings.create(model=EMBED_MODEL, input=text)
     return res.data[0].embedding
 
 def to_pgvector(vec: List[float]) -> str:
-    # pgvector textual literal: [v1,v2,...]
+    # textual literal for pgvector: [v1,v2,...]
     return "[" + ",".join(str(x) for x in vec) + "]"
 
-# --- endpoints ---
+@app.get("/")
+def root():
+    return {"ok": True, "model": EMBED_MODEL}
+
 @app.post("/ingest")
 def ingest(item: IngestIn):
     pgv = to_pgvector(embed_text(item.content))
@@ -53,7 +56,9 @@ def ingest(item: IngestIn):
                 "INSERT INTO documents (content, embedding) VALUES (%s, %s::vector) RETURNING id",
                 (item.content, pgv),
             )
-            return {"id": cur.fetchone()[0]}
+            new_id = cur.fetchone()[0]
+            conn.commit()
+            return {"id": new_id}
         else:
             cur.execute(
                 """
@@ -66,11 +71,14 @@ def ingest(item: IngestIn):
                 """,
                 (item.id, item.content, pgv),
             )
-            return {"id": cur.fetchone()[0]}
+            upsert_id = cur.fetchone()[0]
+            conn.commit()
+            return {"id": upsert_id}
 
 @app.post("/search", response_model=SearchOut)
 def search(payload: SearchIn):
     qv = to_pgvector(embed_text(payload.query))
+    # cosine distance operator in pgvector is <=> ; lower = more similar
     sql = """
       SELECT id, content, (embedding <=> %s::vector) AS distance
       FROM documents
