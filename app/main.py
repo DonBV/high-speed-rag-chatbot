@@ -61,7 +61,7 @@ def root():
 
 
 @app.post("/ingest")
-def ingest(item: "IngestIn"):
+def ingest(item: "IngestIn") -> dict:
     pgv = to_pgvector(embed_text(item.content))
     with pool.connection() as conn, conn.cursor() as cur:
         if item.id is None:
@@ -90,7 +90,7 @@ def ingest(item: "IngestIn"):
 
 
 @app.post("/search", response_model=SearchOut)
-def search(payload: "SearchIn"):
+def search(payload: "SearchIn") -> "SearchOut":
     qv = to_pgvector(embed_text(payload.query))
     # cosine distance operator in pgvector is <=> ; lower = more similar
     sql = """
