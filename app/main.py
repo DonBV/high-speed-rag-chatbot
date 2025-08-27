@@ -61,7 +61,7 @@ def root():
 
 
 @app.post("/ingest")
-def ingest(item: "IngestIn") -> dict:
+def ingest(item: "IngestIn"):
     pgv = to_pgvector(embed_text(item.content))
     with pool.connection() as conn, conn.cursor() as cur:
         if item.id is None:
