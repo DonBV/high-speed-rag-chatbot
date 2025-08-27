@@ -1,4 +1,7 @@
 # app/main.py
+
+from __future__ import annotations
+
 import os
 from typing import List, Optional
 
@@ -8,13 +11,9 @@ from psycopg_pool import ConnectionPool
 from pydantic import BaseModel, Field
 
 # --- config from env ---
-DATABASE_URL = os.environ[
-    "DATABASE_URL"
-]  # e.g. postgresql://postgres:postgres@db:5432/rag
+DATABASE_URL = os.environ["DATABASE_URL"]  # e.g. postgresql://postgres:postgres@db:5432/rag
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-EMBED_MODEL = os.environ.get(
-    "EMBED_MODEL", "text-embedding-3-small"
-)  # 1536-dim by default
+EMBED_MODEL = os.environ.get("EMBED_MODEL", "text-embedding-3-small")  # 1536-dim by default
 
 pool = ConnectionPool(conninfo=DATABASE_URL, max_size=10)
 client = OpenAI(api_key=OPENAI_API_KEY)
