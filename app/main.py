@@ -23,12 +23,12 @@ app = FastAPI(title="RAG Vector API", version="0.1.0")
 
 
 # --- pydantic models ---
-class IngestIn(BaseModel):
+class IngestRequest(BaseModel):
     content: str = Field(..., min_length=1)
     id: Optional[int] = None
 
 
-class SearchIn(BaseModel):
+class SearchRequest(BaseModel):
     query: str = Field(..., min_length=1)
     k: int = Field(default=3, ge=1, le=50)
 
