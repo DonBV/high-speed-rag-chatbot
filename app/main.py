@@ -3,49 +3,61 @@ import os
 from typing import List, Optional
 
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
-from psycopg_pool import ConnectionPool
 from openai import OpenAI
+from psycopg_pool import ConnectionPool
+from pydantic import BaseModel, Field
 
 # --- config from env ---
-DATABASE_URL = os.environ["DATABASE_URL"]  # e.g. postgresql://postgres:postgres@db:5432/rag
+DATABASE_URL = os.environ[
+    "DATABASE_URL"
+]  # e.g. postgresql://postgres:postgres@db:5432/rag
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-EMBED_MODEL = os.environ.get("EMBED_MODEL", "text-embedding-3-small")  # 1536-dim by default
+EMBED_MODEL = os.environ.get(
+    "EMBED_MODEL", "text-embedding-3-small"
+)  # 1536-dim by default
 
 pool = ConnectionPool(conninfo=DATABASE_URL, max_size=10)
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI(title="RAG Vector API", version="0.1.0")
 
+
 # --- pydantic models ---
 class IngestIn(BaseModel):
     content: str = Field(..., min_length=1)
     id: Optional[int] = None
 
+
 class SearchIn(BaseModel):
     query: str = Field(..., min_length=1)
     k: int = Field(default=3, ge=1, le=50)
+
 
 class Hit(BaseModel):
     id: int
     content: str
     distance: float
 
+
 class SearchOut(BaseModel):
     hits: List[Hit]
+
 
 def embed_text(text: str) -> List[float]:
     # OpenAI embeddings
     res = client.embeddings.create(model=EMBED_MODEL, input=text)
     return res.data[0].embedding
 
+
 def to_pgvector(vec: List[float]) -> str:
     # textual literal for pgvector: [v1,v2,...]
     return "[" + ",".join(str(x) for x in vec) + "]"
 
+
 @app.get("/")
 def root():
     return {"ok": True, "model": EMBED_MODEL}
+
 
 @app.post("/ingest")
 def ingest(item: IngestIn):
@@ -74,6 +86,7 @@ def ingest(item: IngestIn):
             upsert_id = cur.fetchone()[0]
             conn.commit()
             return {"id": upsert_id}
+
 
 @app.post("/search", response_model=SearchOut)
 def search(payload: SearchIn):
