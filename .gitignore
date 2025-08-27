@@ -1,0 +1,66 @@
+# === Python / build ===
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtualenvs / tooling
+.venv/
+venv/
+env/
+ENV/
+.envrc
+.python-version
+
+# Packaging artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Tests / coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Type checkers / linters caches
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Logs
+*.log
+logs/
+
+# === Editors / IDEs ===
+# VS Code: ignore everything, but allow useful shared files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains (PyCharm, IntelliJ, etc.)
+.idea/
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# === Env & secrets ===
+# Never commit real secrets.
+.env
+.env.*
+!.env.example
+
+# === Docker / local only ===
+# Local overrides and random bind mounts
+docker-compose.override.yml
+pgdata/
