@@ -9,16 +9,16 @@ Awesome — here’s a **turn-key English `README.md`** you can drop into the ro
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-green.svg)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](./LICENSE)
 
-Minimal REST API for semantic search: embeddings via OpenAI, storage in **Postgres + pgvector** with an **HNSW** index, and ranking with the `<=>` distance operator. One-command local start with Docker Compose.  
+Minimal REST API for semantic search: embeddings via OpenAI, storage in **Postgres + pgvector** with an **HNSW** index, and ranking with the `<=>` distance operator. One-command local start with Docker Compose.
 Interactive API docs are available at **`/docs`** (Swagger UI) and **`/redoc`** (ReDoc).
 
 ---
 
 ## Features
 
-- Store embeddings in Postgres (`vector(n)`) and search with an HNSW ANN index  
-- Simple FastAPI endpoints: `POST /ingest` (upsert doc + embedding), `POST /search` (k-NN by cosine distance)  
-- One-command local deployment with `docker-compose`  
+- Store embeddings in Postgres (`vector(n)`) and search with an HNSW ANN index
+- Simple FastAPI endpoints: `POST /ingest` (upsert doc + embedding), `POST /search` (k-NN by cosine distance)
+- One-command local deployment with `docker-compose`
 - `.env.example` for quick configuration
 
 ---
