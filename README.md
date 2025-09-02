@@ -74,14 +74,14 @@ docker compose up -d
 
 * On **first start**, Postgres automatically runs any `*.sql` in `/docker-entrypoint-initdb.d/` — our schema and HNSW index will be created.
 * If you previously started the DB and need a clean init, run `docker compose down -v` first, then `up -d`.
-  *(Init scripts run **only** on an empty data directory / fresh volume.)* 
+  *(Init scripts run **only** on an empty data directory / fresh volume.)*
 
-> **Compose note**: On older setups that still use Compose v1, the command is `docker-compose up -d`. Newer Docker uses **Compose v2** with `docker compose`. 
+> **Compose note**: On older setups that still use Compose v1, the command is `docker-compose up -d`. Newer Docker uses **Compose v2** with `docker compose`.
 
 Docs:
 
 * Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-* ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc) 
+* ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ### 3) Smoke test (cURL)
 
@@ -131,8 +131,8 @@ Expected:
 
 ## How it works
 
-* **Embeddings**: the API calls OpenAI’s embeddings endpoint (default model `text-embedding-3-small`) and stores the resulting vector in Postgres as a pgvector literal like `[v1,v2,...]`. *(Default dimension 1536; keep DB column in sync.)* 
-* **Postgres + pgvector**: the table has a `vector(1536)` column (matching the default model). We build an **HNSW** index with `vector_cosine_ops` for fast ANN search and order results with the cosine-distance operator `<=>`. 
+* **Embeddings**: the API calls OpenAI’s embeddings endpoint (default model `text-embedding-3-small`) and stores the resulting vector in Postgres as a pgvector literal like `[v1,v2,...]`. *(Default dimension 1536; keep DB column in sync.)*
+* **Postgres + pgvector**: the table has a `vector(1536)` column (matching the default model). We build an **HNSW** index with `vector_cosine_ops` for fast ANN search and order results with the cosine-distance operator `<=>`.
 * **Connection pooling**: `psycopg_pool.ConnectionPool` keeps DB connections warm to reduce latency and support concurrency.
 
 ---
@@ -150,9 +150,9 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ## Troubleshooting
 
-* **`type "vector" does not exist`** — the extension wasn’t installed: you likely started with a non-empty volume. Either run `CREATE EXTENSION vector;` manually or do `docker compose down -v` and `up -d` again. *(Init scripts run only on a fresh data directory.)* 
-* **Init script didn’t run** — scripts in `/docker-entrypoint-initdb.d` run **only** on first initialization; if the volume isn’t empty, they’re skipped. Use `docker compose down -v` to reset volumes, then `up -d`. 
-* **`dimension mismatch`** — your `vector(n)` column doesn’t match the embedding dimension of the chosen model (e.g., 1536 by default for `text-embedding-3-small`). 
+* **`type "vector" does not exist`** — the extension wasn’t installed: you likely started with a non-empty volume. Either run `CREATE EXTENSION vector;` manually or do `docker compose down -v` and `up -d` again. *(Init scripts run only on a fresh data directory.)*
+* **Init script didn’t run** — scripts in `/docker-entrypoint-initdb.d` run **only** on first initialization; if the volume isn’t empty, they’re skipped. Use `docker compose down -v` to reset volumes, then `up -d`.
+* **`dimension mismatch`** — your `vector(n)` column doesn’t match the embedding dimension of the chosen model (e.g., 1536 by default for `text-embedding-3-small`).
 
 ---
 
@@ -175,5 +175,3 @@ This repo was inspired by the AWS Solutions sample **“guidance-for-high-speed-
 MIT — see [LICENSE](./LICENSE).
 
 ---
-
-
