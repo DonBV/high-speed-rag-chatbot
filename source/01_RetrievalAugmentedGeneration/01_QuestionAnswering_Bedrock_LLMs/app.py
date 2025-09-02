@@ -114,7 +114,6 @@ def get_conversation_chain(vectorstore):
 
 # This function is responsible for processing the user's input question and generating a response from the chatbot
 def handle_userinput(user_question):
-
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
 

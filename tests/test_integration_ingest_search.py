@@ -1,14 +1,17 @@
 import os
+
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 skip_if_no_integration = pytest.mark.skipif(
     os.getenv("RUN_INTEGRATION") != "1",
-    reason="RUN_INTEGRATION != 1: run docker compose and set the variable"
+    reason="RUN_INTEGRATION != 1: run docker compose and set the variable",
 )
 
 client = TestClient(app)
+
 
 @skip_if_no_integration
 def test_ingest_and_search_roundtrip():
