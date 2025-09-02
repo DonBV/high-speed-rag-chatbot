@@ -175,7 +175,7 @@ This repo was inspired by the AWS Solutions sample **“guidance-for-high-speed-
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT-0 — see [LICENSE](./LICENSE).
 
 ---
 
