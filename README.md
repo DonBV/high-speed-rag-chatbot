@@ -43,9 +43,7 @@ requirements-api.txt    # API deps
 Copy the template and fill in your keys:
 
 ```
-
 cp .env.example .env
-
 ```
 
 Key variables:
@@ -76,15 +74,15 @@ docker compose up -d
 
 * On **first start**, Postgres automatically runs any `*.sql` in `/docker-entrypoint-initdb.d/` — our schema and HNSW index will be created.
 * If you previously started the DB and need a clean init, run `docker compose down -v` first, then `up -d`.
-  *(Init scripts run **only** on an empty data directory / fresh volume.)*
+  *(Init scripts run **only** on an empty data directory / fresh volume.)* 
 
 > **Compose note**: On older setups that still use Compose v1, the command is `docker-compose up -d`. Newer Docker uses **Compose v2** with `docker compose`. 
 
 Docs:
 
 * Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-* ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
- 
+* ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc) 
+
 ### 3) Smoke test (cURL)
 
 Ingest a couple of docs:
@@ -153,9 +151,8 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ## Troubleshooting
 
 * **`type "vector" does not exist`** — the extension wasn’t installed: you likely started with a non-empty volume. Either run `CREATE EXTENSION vector;` manually or do `docker compose down -v` and `up -d` again. *(Init scripts run only on a fresh data directory.)* 
-* **Init script didn’t run** — scripts in `/docker-entrypoint-initdb.d` run **only** on first initialization; if the volume isn’t empty, they’re skipped. Use `docker compose down -v` to reset volumes, then `up -d`.
+* **Init script didn’t run** — scripts in `/docker-entrypoint-initdb.d` run **only** on first initialization; if the volume isn’t empty, they’re skipped. Use `docker compose down -v` to reset volumes, then `up -d`. 
 * **`dimension mismatch`** — your `vector(n)` column doesn’t match the embedding dimension of the chosen model (e.g., 1536 by default for `text-embedding-3-small`). 
-* **OpenAI errors** — ensure `OPENAI_API_KEY` is set and the API container can reach the internet.
 
 ---
 
@@ -175,7 +172,8 @@ This repo was inspired by the AWS Solutions sample **“guidance-for-high-speed-
 
 ## License
 
-MIT-0 — see [LICENSE](./LICENSE).
+MIT — see [LICENSE](./LICENSE).
 
 ---
+
 
