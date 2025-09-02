@@ -25,7 +25,7 @@ Interactive API docs are available at **`/docs`** (Swagger UI) and **`/redoc`** 
 ```
 
 app/
-**init**.py
+__init__.py.py
 main.py               # FastAPI: /ingest, /search
 deployment/
 init/02\_schema.sql    # CREATE EXTENSION vector; documents table; HNSW index
