@@ -12,7 +12,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_aws import ChatBedrock
 from langchain_community.embeddings import BedrockEmbeddings
 from langchain_core.prompts import PromptTemplate
-from langchain_postgres import PGVector
 from langchain_postgres.vectorstores import PGVector
 from PIL import Image
 from PyPDF2 import PdfReader
@@ -114,7 +113,6 @@ def get_conversation_chain(vectorstore):
 
 # This function is responsible for processing the user's input question and generating a response from the chatbot
 def handle_userinput(user_question):
-
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
 
