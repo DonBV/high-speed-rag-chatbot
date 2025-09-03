@@ -2,6 +2,7 @@
 
 [![CodeQL](https://github.com/DonBV/high-speed-rag-chatbot/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/DonBV/high-speed-rag-chatbot/actions/workflows/codeql.yml)
 [![pre-commit.ci](https://results.pre-commit.ci/badge/github/DonBV/high-speed-rag-chatbot/main.svg)](https://results.pre-commit.ci/latest/github/DonBV/high-speed-rag-chatbot/main)
+[![pre-commit](https://github.com/DonBV/high-speed-rag-chatbot/actions/workflows/pre-commit.yml/badge.svg?branch=main)](https://github.com/DonBV/high-speed-rag-chatbot/actions/workflows/pre-commit.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-green.svg)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](./LICENSE)
