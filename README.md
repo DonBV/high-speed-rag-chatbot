@@ -13,7 +13,8 @@ Interactive API docs live at **`/docs`** (Swagger UI) and **`/redoc`** (ReDoc).
 
 ## Features
 
-* **Model Agnostic**: Compatible with **OpenAI**, or drop-in replacements like **vLLM**, **Ollama**, or **LocalAI** (just change `OPENAI_BASE_URL` in `.env`).
+* **Model Agnostic**: Compatible with **OpenAI**, or drop-in replacements like **vLLM**, **Ollama**, or **LocalAI** (set `OPENAI_BASE_URL` in `.env`).
+* **Fully async pipeline**: FastAPI async endpoints, `AsyncOpenAI` client for embeddings, and `psycopg_pool.AsyncConnectionPool` for Postgres.
 * Store embeddings in Postgres (`vector(n)`) and search with an **HNSW** ANN index
 * Simple FastAPI endpoints: `POST /ingest` (upsert doc + embedding), `POST /search` (k-NN by cosine distance)
 * One-command local deployment with **`docker compose`** (Compose v2)
@@ -52,7 +53,7 @@ Key variables:
 | Variable         | Purpose                                  | Example / default                                    |
 | ---------------- | ---------------------------------------- | ---------------------------------------------------- |
 | `OPENAI_API_KEY` | OpenAI API key for embeddings            | `sk-...`                                             |
-| `OPENAI_BASE_URL`| Endpoint for local models (vLLM/Ollama)s | `http://localhost:11434/v1` (Leave empty for OpenAI) |
+| `OPENAI_BASE_URL`| Endpoint for local models (vLLM/Ollama)  | `http://localhost:11434/v1` (Leave empty for OpenAI) |
 | `DATABASE_URL`   | Postgres connection string               | `postgresql://postgres:postgres@db:5432/rag`         |
 | `EMBED_MODEL`    | Embedding model                          | `text-embedding-3-small` (**1536 dims**)             |
 
@@ -133,9 +134,9 @@ Expected:
 
 ## How it works
 
-* **Embeddings**: the API calls OpenAI’s embeddings endpoint (default model `text-embedding-3-small`) and stores the resulting vector in Postgres as a pgvector literal like `[v1,v2,...]`. *(Default dimension 1536; keep DB column in sync.)*
-* **Postgres + pgvector**: the table has a `vector(1536)` column (matching the default model). We build an **HNSW** index with `vector_cosine_ops` for fast ANN search and order results with the cosine-distance operator `<=>`.
-* **Connection pooling**: `psycopg_pool.ConnectionPool` keeps DB connections warm to reduce latency and support concurrency.
+* **Embeddings**: The API uses the `AsyncOpenAI` client, which can target the official OpenAI API or any OpenAI-compatible endpoint (like vLLM/Ollama) by setting the `OPENAI_BASE_URL` environment variable.
+* **Postgres + pgvector**: The table has a `vector(1536)` column (matching the default model). We build an **HNSW** index with `vector_cosine_ops` for fast ANN search and order results with the cosine-distance operator `<=>`.
+* **Connection pooling**: The app uses `psycopg`'s built-in `AsyncConnectionPool` to manage database connections efficiently, reducing latency and supporting high concurrency without blocking the event loop.
 
 ---
 
