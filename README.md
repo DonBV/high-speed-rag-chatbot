@@ -13,6 +13,7 @@ Interactive API docs live at **`/docs`** (Swagger UI) and **`/redoc`** (ReDoc).
 
 ## Features
 
+* **Model Agnostic**: Compatible with **OpenAI**, or drop-in replacements like **vLLM**, **Ollama**, or **LocalAI** (just change `OPENAI_BASE_URL` in `.env`).
 * Store embeddings in Postgres (`vector(n)`) and search with an **HNSW** ANN index
 * Simple FastAPI endpoints: `POST /ingest` (upsert doc + embedding), `POST /search` (k-NN by cosine distance)
 * One-command local deployment with **`docker compose`** (Compose v2)
@@ -48,11 +49,12 @@ cp .env.example .env
 
 Key variables:
 
-| Variable         | Purpose                       | Example / default                            |
-| ---------------- | ----------------------------- | -------------------------------------------- |
-| `OPENAI_API_KEY` | OpenAI API key for embeddings | `sk-...`                                     |
-| `DATABASE_URL`   | Postgres connection string    | `postgresql://postgres:postgres@db:5432/rag` |
-| `EMBED_MODEL`    | Embedding model               | `text-embedding-3-small` (**1536 dims**)     |
+| Variable         | Purpose                                  | Example / default                                    |
+| ---------------- | ---------------------------------------- | ---------------------------------------------------- |
+| `OPENAI_API_KEY` | OpenAI API key for embeddings            | `sk-...`                                             |
+| `OPENAI_BASE_URL`| Endpoint for local models (vLLM/Ollama)s | `http://localhost:11434/v1` (Leave empty for OpenAI) |
+| `DATABASE_URL`   | Postgres connection string               | `postgresql://postgres:postgres@db:5432/rag`         |
+| `EMBED_MODEL`    | Embedding model                          | `text-embedding-3-small` (**1536 dims**)             |
 
 > The `vector(n)` column dimension **must match** the embedding model’s output dimension (e.g., 1536 for `text-embedding-3-small`).
 
@@ -161,6 +163,20 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 * Do **not** commit `.env` (it’s ignored by `.gitignore`).
 * Keep secrets in local env or CI secrets.
 * Repo is wired with Code Scanning (CodeQL) and pre-commit CI.
+
+---
+
+## Roadmap
+
+This project is actively maintained. Current focus is on reliability and "production-readiness":
+
+- [ ] **LLM-as-a-Judge Pipeline**: Integration with `ragas` to automatically measure *Faithfulness* and *Answer Relevance*.
+- [ ] **CI/CD Quality Gate**: GitHub Action that **blocks PRs** if RAG quality metrics drop below a set threshold (preventing regressions).
+- [ ] **Hybrid Search**: Integration of keyword-based search (BM25) alongside vector search to improve retrieval for specific terms (SKUs, names).
+- [ ] **Streaming Responses**: Full support for streaming LLM tokens back to the client for instant user feedback.
+- [ ] **Dynamic Embedding Config**: Automatic database schema adjustment when switching embedding models (e.g., OpenAI vs. Ollama/HuggingFace).
+
+Contributions are welcome! If you'd like to work on any of these features, please open an issue to discuss the implementation.
 
 ---
 
